@@ -1,0 +1,8 @@
+description: "Metric-independent benchmark plans, workloads, probes, measurements, evaluation, history, and complexity."
+topics:
+  - primitives
+  - benchmark
+  - performance
+homepage: "https://swift-institute.org"
+readme:
+  family: E
