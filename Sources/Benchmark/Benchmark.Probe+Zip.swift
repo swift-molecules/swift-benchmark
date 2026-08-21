@@ -28,21 +28,22 @@ extension Benchmark.Probe {
                 }
             },
             stop: { state in
-                switch self.stop(state.0) {
+                switch other.stop(state.1) {
                 case .failure(let failure):
-                    return .failure(.first(failure))
-                case .success(let first):
-                    switch other.stop(state.1) {
+                    self.cancel(state.0)
+                    return .failure(.second(failure))
+                case .success(let second):
+                    switch self.stop(state.0) {
                     case .failure(let failure):
-                        return .failure(.second(failure))
-                    case .success(let second):
+                        return .failure(.first(failure))
+                    case .success(let first):
                         return .success((first, second))
                     }
                 }
             },
             cancel: { state in
-                self.cancel(state.0)
                 other.cancel(state.1)
+                self.cancel(state.0)
             }
         )
     }

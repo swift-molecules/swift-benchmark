@@ -20,6 +20,10 @@ struct `Benchmark Execution Tests` {
         var cancellations = 0
     }
 
+    final class Trace: @unchecked Sendable {
+        var events: [String] = []
+    }
+
     enum Failure: Swift.Error {
         case failed
     }
@@ -91,6 +95,54 @@ struct `Benchmark Execution Tests` {
         #expect(counts.operations == 1)
         #expect(execution.measurement.values.first?.0 == 1)
         #expect(execution.measurement.values.first?.1 == "observed")
+    }
+
+    @Test
+    func `composed probes nest lifecycle in reverse stop order`() throws {
+        let trace = Trace()
+        let outer = Benchmark.Probe<Void, String, Never>(
+            start: {
+                trace.events.append("outer start")
+                return .success(())
+            },
+            stop: { _ in
+                trace.events.append("outer stop")
+                return .success("outer")
+            },
+            cancel: { _ in trace.events.append("outer cancel") }
+        )
+        let inner = Benchmark.Probe<Void, String, Never>(
+            start: {
+                trace.events.append("inner start")
+                return .success(())
+            },
+            stop: { _ in
+                trace.events.append("inner stop")
+                return .success("inner")
+            },
+            cancel: { _ in trace.events.append("inner cancel") }
+        )
+        let workload = Benchmark.Workload<Void, Never>(
+            setup: {},
+            operation: { _ in trace.events.append("workload") },
+            teardown: { _ in }
+        )
+
+        _ = try Benchmark.run(
+            plan: Benchmark.Plan(warmup: 0, measurements: 1),
+            workload: workload,
+            probe: outer.zip(inner)
+        )
+
+        #expect(
+            trace.events == [
+                "outer start",
+                "inner start",
+                "workload",
+                "inner stop",
+                "outer stop",
+            ]
+        )
     }
 
     @Test
