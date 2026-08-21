@@ -17,7 +17,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/swift-primitives/swift-sample-primitives.git",
-            branch: "testing-stack/sample-sendable-metatype"
+            branch: "main"
         ),
         .package(
             url: "https://github.com/swift-primitives/swift-numeric-primitives.git",
