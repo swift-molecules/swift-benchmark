@@ -16,15 +16,15 @@ let package = Package(
     ],
     dependencies: [
         .package(
-            url: "https://github.com/swift-primitives/swift-sample-primitives.git",
+            url: "https://github.com/swift-atoms/swift-sample.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-numeric-primitives.git",
+            url: "https://github.com/swift-atoms/swift-numeric.git",
             branch: "main"
         ),
         .package(
-            url: "https://github.com/swift-primitives/swift-cardinal-primitives.git",
+            url: "https://github.com/swift-atoms/swift-cardinal.git",
             branch: "main"
         ),
     ],
@@ -32,17 +32,16 @@ let package = Package(
         .target(
             name: "Benchmark",
             dependencies: [
-                .product(name: "Sample Primitives", package: "swift-sample-primitives"),
-                .product(name: "Real Primitives", package: "swift-numeric-primitives"),
-                .product(name: "Cardinal Primitives", package: "swift-cardinal-primitives"),
+                .product(name: "Sample", package: "swift-sample"),
+                .product(name: "Real", package: "swift-numeric"),
+                .product(name: "Cardinal", package: "swift-cardinal"),
             ]
         ),
         .testTarget(
             name: "Benchmark Tests",
             dependencies: [
-                .target(name: "Benchmark"),
-                .product(name: "Sample Primitives", package: "swift-sample-primitives"),
-                .product(name: "Cardinal Primitives", package: "swift-cardinal-primitives"),
+                .product(name: "Sample", package: "swift-sample"),
+                .product(name: "Cardinal", package: "swift-cardinal"),
             ]
         ),
     ],

@@ -1,6 +1,6 @@
 # Benchmark
 
-[![CI](https://github.com/swift-primitives/swift-benchmark/actions/workflows/ci.yml/badge.svg)](https://github.com/swift-primitives/swift-benchmark/actions/workflows/ci.yml)
+[![CI](https://github.com/swift-molecules/swift-benchmark/actions/workflows/ci.yml/badge.svg)](https://github.com/swift-molecules/swift-benchmark/actions/workflows/ci.yml)
 
 Metric-independent benchmark plans, workloads, probes, measurements, evaluation, history, and complexity semantics for Swift.
 
@@ -25,7 +25,7 @@ This package has no dependency on Test, Apple Testing, Clock, Memory, JSON, File
 
 ```swift
 .package(
-    url: "https://github.com/swift-primitives/swift-benchmark.git",
+    url: "https://github.com/swift-molecules/swift-benchmark.git",
     branch: "main"
 )
 ```
