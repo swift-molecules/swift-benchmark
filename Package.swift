@@ -33,7 +33,7 @@ let package = Package(
             name: "Benchmark",
             dependencies: [
                 .product(name: "Sample", package: "swift-sample"),
-                .product(name: "Real", package: "swift-numeric"),
+                .product(name: "Numeric", package: "swift-numeric"),
                 .product(name: "Cardinal", package: "swift-cardinal"),
             ]
         ),
