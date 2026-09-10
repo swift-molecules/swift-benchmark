@@ -1,12 +1,7 @@
-// This source file is part of the swift-benchmark open source project
-//
-// Copyright (c) 2024-2026 Coen ten Thije Boonkkamp and the swift-benchmark project authors
-// Licensed under Apache License v2.0
-
 public import Sample_Primitives
 
 extension Benchmark {
-    /// Ordered typed observations from measured iterations.
+
     public struct Measurement<Value: Sendable>: Sendable {
         public let values: [Value]
 
@@ -24,7 +19,6 @@ extension Benchmark.Measurement {
         .init(values.map(transform))
     }
 
-    /// Projects the observations into the canonical Sample batch owner.
     public func sample(
         sortedBy comparator: Order.Comparator<Value>
     ) -> Sample.Batch<Value> {

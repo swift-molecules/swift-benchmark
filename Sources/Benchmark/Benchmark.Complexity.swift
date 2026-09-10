@@ -1,14 +1,9 @@
-// This source file is part of the swift-benchmark open source project
-//
-// Copyright (c) 2024-2026 Coen ten Thije Boonkkamp and the swift-benchmark project authors
-// Licensed under Apache License v2.0
-
 import Real_Primitives
 import Sample_Primitives
 import Cardinal_Primitives
 
 extension Benchmark {
-    /// Empirical complexity semantics over dimensionless observations.
+
     public enum Complexity {}
 }
 
