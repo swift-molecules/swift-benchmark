@@ -1,4 +1,4 @@
-import Real_Primitives
+import Numeric
 
 extension Benchmark.Complexity {
     public enum Class: String, Sendable, Hashable, Codable, CaseIterable {

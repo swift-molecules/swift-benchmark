@@ -1,5 +1,5 @@
 import Benchmark
-import Cardinal_Primitives
+import Cardinal
 import Testing
 
 @Suite

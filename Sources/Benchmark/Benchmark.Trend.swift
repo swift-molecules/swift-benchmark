@@ -1,4 +1,4 @@
-public import Sample_Primitives
+public import Sample
 
 extension Benchmark {
 

@@ -1,4 +1,4 @@
-import Cardinal_Primitives
+import Cardinal
 
 extension Benchmark {
 

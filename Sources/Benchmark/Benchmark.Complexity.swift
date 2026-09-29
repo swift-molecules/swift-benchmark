@@ -1,6 +1,6 @@
-import Real_Primitives
-import Sample_Primitives
-import Cardinal_Primitives
+import Numeric
+import Sample
+import Cardinal
 
 extension Benchmark {
 

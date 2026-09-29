@@ -40,6 +40,7 @@ let package = Package(
         .testTarget(
             name: "Benchmark Tests",
             dependencies: [
+                "Benchmark",
                 .product(name: "Sample", package: "swift-sample"),
                 .product(name: "Cardinal", package: "swift-cardinal"),
             ]
