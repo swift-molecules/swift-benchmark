@@ -1,6 +1,6 @@
 extension Benchmark.Probe {
 
-    public func zip<OtherState: Sendable, OtherObservation: Sendable, OtherFailure: Swift.Error>(
+    public func zip<OtherState: Sendable, OtherObservation: Sendable, OtherFailure: Swift::Error>(
         _ other: Benchmark.Probe<OtherState, OtherObservation, OtherFailure>
     ) -> Benchmark.Probe<
         (State, OtherState),

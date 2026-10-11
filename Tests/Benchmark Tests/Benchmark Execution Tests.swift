@@ -19,7 +19,7 @@ struct `Benchmark Execution Tests` {
         var events: [String] = []
     }
 
-    enum Failure: Swift.Error {
+    enum Failure: Swift::Error {
         case failed
     }
 

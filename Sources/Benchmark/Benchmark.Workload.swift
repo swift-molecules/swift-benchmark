@@ -1,6 +1,6 @@
 extension Benchmark {
 
-    public struct Workload<State: Sendable, Failure: Swift.Error>: Sendable {
+    public struct Workload<State: Sendable, Failure: Swift::Error>: Sendable {
         public let setup: @Sendable () throws(Failure) -> State
         public let operation: @Sendable (inout State) throws(Failure) -> Void
         public let teardown: @Sendable (consuming State) throws(Failure) -> Void

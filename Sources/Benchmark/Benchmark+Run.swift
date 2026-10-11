@@ -4,10 +4,10 @@ extension Benchmark {
 
     public static func run<
         WorkloadState: Sendable,
-        WorkloadFailure: Swift.Error,
+        WorkloadFailure: Swift::Error,
         ProbeState: Sendable,
         Observation: Sendable,
-        ProbeFailure: Swift.Error
+        ProbeFailure: Swift::Error
     >(
         plan: Benchmark.Plan,
         workload: Benchmark.Workload<WorkloadState, WorkloadFailure>,

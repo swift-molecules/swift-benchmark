@@ -1,6 +1,6 @@
 extension Benchmark {
 
-    public struct Probe<State: Sendable, Observation: Sendable, Failure: Swift.Error>: Sendable {
+    public struct Probe<State: Sendable, Observation: Sendable, Failure: Swift::Error>: Sendable {
         public let start: @Sendable () -> Result<State, Failure>
         public let stop: @Sendable (consuming State) -> Result<Observation, Failure>
         public let cancel: @Sendable (consuming State) -> Void
