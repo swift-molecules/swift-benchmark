@@ -14,9 +14,9 @@ extension Benchmark {
 
 extension Benchmark.Evaluation {
     public func callAsFunction(
-            current: Value,
-            baseline: Benchmark.Baseline<Value>
-        ) -> Benchmark.Comparison {
-            compare(current, baseline.value)
+        current: Value,
+        baseline: Benchmark.Baseline<Value>
+    ) -> Benchmark.Comparison {
+        compare(current, baseline.value)
     }
 }

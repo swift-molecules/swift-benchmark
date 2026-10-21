@@ -2,11 +2,13 @@ extension Benchmark.Probe {
 
     public func zip<OtherState: Sendable, OtherObservation: Sendable, OtherFailure: Swift::Error>(
         _ other: Benchmark.Probe<OtherState, OtherObservation, OtherFailure>
-    ) -> Benchmark.Probe<
-        (State, OtherState),
-        (Observation, OtherObservation),
-        Benchmark.Failure<Failure, OtherFailure>
-    > {
+    )
+        -> Benchmark.Probe<
+            (State, OtherState),
+            (Observation, OtherObservation),
+            Benchmark.Failure<Failure, OtherFailure>
+        >
+    {
         .init(
             start: {
                 switch self.start() {
