@@ -1,3 +1,4 @@
+import Benchmark
 import Benchmark_Codable_Integration
 import Cardinal
 import Testing
