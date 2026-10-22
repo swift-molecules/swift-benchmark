@@ -1,5 +1,5 @@
 extension Benchmark.Trend {
-    public enum Direction: Sendable, Hashable, Codable {
+    public enum Direction: Sendable, Hashable {
         case improving
         case stable
         case regressing

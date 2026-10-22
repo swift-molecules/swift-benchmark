@@ -12,7 +12,11 @@ let package = Package(
         .visionOS(.v27),
     ],
     products: [
-        .library(name: "Benchmark", targets: ["Benchmark"])
+        .library(name: "Benchmark", targets: ["Benchmark"]),
+        .library(
+            name: "Benchmark Codable Integration",
+            targets: ["Benchmark Codable Integration"]
+        ),
     ],
     dependencies: [
         .package(
@@ -37,10 +41,17 @@ let package = Package(
                 .product(name: "Cardinal", package: "swift-cardinal"),
             ]
         ),
+        .target(
+            name: "Benchmark Codable Integration",
+            dependencies: [
+                .target(name: "Benchmark")
+            ]
+        ),
         .testTarget(
             name: "Benchmark Tests",
             dependencies: [
                 .target(name: "Benchmark"),
+                .target(name: "Benchmark Codable Integration"),
                 .product(name: "Sample", package: "swift-sample"),
                 .product(name: "Cardinal", package: "swift-cardinal"),
             ]

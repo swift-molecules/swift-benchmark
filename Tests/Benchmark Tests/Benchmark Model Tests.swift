@@ -1,4 +1,4 @@
-import Benchmark
+import Benchmark_Codable_Integration
 import Cardinal
 import Testing
 
@@ -44,6 +44,18 @@ struct `Benchmark Model Tests` {
         )
         #expect(history.latest?.value == 12)
     }
+
+    @Test
+    func `hosted serialization conformances remain available`() {
+        require(Benchmark.Baseline<Int>.self)
+        require(Benchmark.Comparison.self)
+        require(Benchmark.Complexity.Class.self)
+        require(Benchmark.Iteration.Phase.self)
+        require(Benchmark.Trend.Direction.self)
+        require(Benchmark.Trend.Regression.self)
+    }
+
+    private func require<Value: Codable>(_: Value.Type) {}
 
     struct Token: ~Copyable {
         let value: Int
