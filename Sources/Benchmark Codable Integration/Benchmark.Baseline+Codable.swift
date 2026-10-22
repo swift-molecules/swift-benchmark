@@ -1,4 +1,4 @@
-import Benchmark
+public import Benchmark
 
 extension Benchmark.Baseline: Codable where Value: Codable {
     public init(from decoder: any Decoder) throws {

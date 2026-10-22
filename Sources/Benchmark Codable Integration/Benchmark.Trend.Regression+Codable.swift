@@ -1,4 +1,4 @@
-import Benchmark
+public import Benchmark
 
 extension Benchmark.Trend.Regression: Codable {
     public init(from decoder: any Decoder) throws {

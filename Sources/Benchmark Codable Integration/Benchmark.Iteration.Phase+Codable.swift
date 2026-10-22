@@ -1,4 +1,4 @@
-import Benchmark
+public import Benchmark
 
 extension Benchmark.Iteration.Phase: Codable {
     public init(from decoder: any Decoder) throws {

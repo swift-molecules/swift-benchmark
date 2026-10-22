@@ -1,4 +1,4 @@
-public import Benchmark
+import Benchmark
 
 extension Benchmark {
     enum Coding {}
