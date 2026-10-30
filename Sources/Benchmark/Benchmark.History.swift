@@ -1,3 +1,5 @@
+import Cardinal
+
 extension Benchmark {
 
     public struct History<Value: Sendable>: Sendable {

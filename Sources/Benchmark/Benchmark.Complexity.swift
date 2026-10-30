@@ -26,12 +26,12 @@ extension Benchmark.Complexity {
                 complexity: complexity,
                 fit: Sample.Regression.linear(
                     x: valid.map { complexity.transform(Double(Int(clamping: $0.size))) },
-                    y: valid.map(\.observation)
+                    y: valid.map { $0.observation }
                 )
             )
         }
         candidates.sort { $0.fit.rSquared > $1.fit.rSquared }
-        let trend = Sample.Trend.mannKendall(valid, value: \.observation)
+        let trend = Sample.Trend.mannKendall(valid) { $0.observation }
         return .init(
             exponent: .init(value: exponentFit.slope, fit: exponentFit),
             candidates: candidates,

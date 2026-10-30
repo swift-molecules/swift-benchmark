@@ -13,4 +13,7 @@ extension Benchmark {
 
 extension Benchmark.Baseline: Equatable where Value: Equatable {}
 extension Benchmark.Baseline: Hashable where Value: Hashable {}
-extension Benchmark.Baseline: Codable where Value: Codable {}
+
+#if !hasFeature(Embedded)
+    extension Benchmark.Baseline: Codable where Value: Codable {}
+#endif

@@ -1,7 +1,7 @@
 import Numeric
 
 extension Benchmark.Complexity {
-    public enum Class: String, Sendable, Hashable, Codable, CaseIterable {
+    public enum Class: String, Sendable, Hashable, CaseIterable {
         case constant
         case logarithmic
         case squareRoot
@@ -27,3 +27,7 @@ extension Benchmark.Complexity.Class {
         }
     }
 }
+
+#if !hasFeature(Embedded)
+    extension Benchmark.Complexity.Class: Codable {}
+#endif
