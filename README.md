@@ -18,7 +18,7 @@ Use this package to measure a workload with any instrument you can start and sto
 - `Benchmark.Complexity.analyze(_:classes:)` discards points whose size is zero, or whose observation is not finite or not positive. It sorts the remaining points by size, and returns `nil` when fewer than two remain.
   - `Benchmark.Complexity.Exponent` is the slope of a linear fit of log₂ observation against log₂ size. A linear observation gives 1, and a quadratic one gives 2.
   - The candidates are ordered by r², best fit first. `Benchmark.Complexity.Class.logarithmic` uses log₂ n, and `Benchmark.Complexity.Class.exponential` uses 2ⁿ.
-  - The trend is a Mann–Kendall test of the observations, taken in size order.
+  - The trend is a Mann-Kendall test of the observations, taken in size order.
 - `Benchmark.Trend` is `.stable` when the magnitude of the standardized statistic is at most `significance`, which defaults to 1.96 (two-sided 95%). Otherwise it is `.regressing` when the statistic's sign matches `regression`, and `.improving` when it does not. With the default `.increasing`, rising values count as regressions.
 - `Benchmark.Evaluation` is called as `(current, baseline)`. The baseline's `name` takes no part in the comparison.
 - `Benchmark.History` orders its entries by ascending `sequence`, whatever order they were given in. `latest` is the entry with the highest sequence.
