@@ -163,4 +163,32 @@ struct `Benchmark Execution Tests` {
         #expect(counts.cancellations == 1)
         #expect(counts.teardowns == 1)
     }
+
+    @Test
+    func `workload failure during warmup tears down`() throws {
+        let counts = Counts()
+        let plan = try Benchmark.Plan(warmup: 1, measurements: 1)
+        let workload = Benchmark.Workload<Int, Failure>(
+            setup: {
+                counts.setups += 1
+                return 0
+            },
+            operation: { (_: inout Int) throws(Failure) -> Void in
+                throw Failure.failed
+            },
+            teardown: { _ in counts.teardowns += 1 }
+        )
+        let probe = Benchmark.Probe<Int, Int, Never>(
+            start: { .success(0) },
+            stop: { .success($0) },
+            cancel: { _ in counts.cancellations += 1 }
+        )
+
+        #expect(throws: Benchmark.Execution.Failure<Failure, Never>.self) {
+            try Benchmark.run(plan: plan, workload: workload, probe: probe)
+        }
+        #expect(counts.setups == 1)
+        #expect(counts.teardowns == 1)
+        #expect(counts.cancellations == 0)
+    }
 }
