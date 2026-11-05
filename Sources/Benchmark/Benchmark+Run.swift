@@ -28,9 +28,21 @@ extension Benchmark {
                 batch: plan.batch
             )
             iterations.append(iteration)
+            var state: WorkloadState
+            do throws(WorkloadFailure) { state = try workload.setup() } catch {
+                throw .workload(error)
+            }
+
             do throws(WorkloadFailure) {
-                var state = try workload.setup()
                 for _ in 0..<batchCount { try workload.operation(&state) }
+            } catch {
+                do throws(WorkloadFailure) {
+                    try workload.teardown(state)
+                } catch {}
+                throw .workload(error)
+            }
+
+            do throws(WorkloadFailure) {
                 try workload.teardown(state)
             } catch {
                 throw .workload(error)
