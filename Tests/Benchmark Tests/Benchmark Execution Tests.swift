@@ -2,193 +2,195 @@ import Benchmark
 import Cardinal
 import Testing
 
-@Suite
-struct `Benchmark Execution Tests` {
-    @Suite struct Unit {}
-    @Suite struct `Edge Case` {}
-    @Suite struct Integration {}
+extension `Benchmark Execution Tests`.`Benchmark Execution Tests` {
+    @Suite
+    struct `Benchmark Execution Tests` {
+        @Suite struct Unit {}
+        @Suite struct `Edge Case` {}
+        @Suite struct Integration {}
 
-    final class Counts: @unchecked Sendable {
-        var setups = 0
-        var operations = 0
-        var teardowns = 0
-        var cancellations = 0
-    }
+        final class Counts: @unchecked Sendable {
+            var setups = 0
+            var operations = 0
+            var teardowns = 0
+            var cancellations = 0
+        }
 
-    final class Trace: @unchecked Sendable {
-        var events: [String] = []
-    }
+        final class Trace: @unchecked Sendable {
+            var events: [String] = []
+        }
 
-    enum Failure: Swift::Error {
-        case failed
-    }
+        enum Failure: Swift::Error {
+            case failed
+        }
 
-    @Test
-    func `warmups, measured iterations, and batches execute exactly`() throws {
-        let counts = Counts()
-        let plan = try Benchmark.Plan(
-            warmup: 1,
-            measurements: 2,
-            batch: 3
-        )
-        let workload = Benchmark.Workload<Int, Never>(
-            setup: {
-                counts.setups += 1
-                return 0
-            },
-            operation: { state in
-                counts.operations += 1
-                state += 1
-            },
-            teardown: { state in
-                counts.teardowns += 1
-                #expect(state == 3)
+        @Test
+        func `warmups, measured iterations, and batches execute exactly`() throws {
+            let counts = Counts()
+            let plan = try Benchmark.Plan(
+                warmup: 1,
+                measurements: 2,
+                batch: 3
+            )
+            let workload = Benchmark.Workload<Int, Never>(
+                setup: {
+                    counts.setups += 1
+                    return 0
+                },
+                operation: { state in
+                    counts.operations += 1
+                    state += 1
+                },
+                teardown: { state in
+                    counts.teardowns += 1
+                    #expect(state == 3)
+                }
+            )
+            let probe = Benchmark.Probe<Int, Int, Never>(
+                start: { .success(counts.operations) },
+                stop: { start in .success(counts.operations - start) }
+            )
+
+            let execution = try Benchmark.run(plan: plan, workload: workload, probe: probe)
+
+            #expect(counts.setups == 3)
+            #expect(counts.operations == 9)
+            #expect(counts.teardowns == 3)
+            #expect(execution.measurement.values == [3, 3])
+            #expect(execution.iterations.map(\.phase) == [.warmup, .measurement, .measurement])
+            #expect(plan.work == 6)
+        }
+
+        @Test
+        func `probe composition observes one workload execution`() throws {
+            let plan = try Benchmark.Plan(warmup: 0, measurements: 1)
+            let counts = Counts()
+            let workload = Benchmark.Workload<Int, Never>(
+                setup: { 0 },
+                operation: {
+                    $0 += 1
+                    counts.operations += 1
+                },
+                teardown: { _ in }
+            )
+            let first = Benchmark.Probe<Int, Int, Never>(
+                start: { .success(counts.operations) },
+                stop: { .success(counts.operations - $0) }
+            )
+            let second = Benchmark.Probe<Int, String, Never>(
+                start: { .success(counts.operations) },
+                stop: { _ in .success("observed") }
+            )
+
+            let execution = try Benchmark.run(
+                plan: plan,
+                workload: workload,
+                probe: first.zip(second)
+            )
+
+            #expect(counts.operations == 1)
+            #expect(execution.measurement.values.first?.0 == 1)
+            #expect(execution.measurement.values.first?.1 == "observed")
+        }
+
+        @Test
+        func `composed probes nest lifecycle in reverse stop order`() throws {
+            let trace = Trace()
+            let outer = Benchmark.Probe<Void, String, Never>(
+                start: {
+                    trace.events.append("outer start")
+                    return .success(())
+                },
+                stop: { _ in
+                    trace.events.append("outer stop")
+                    return .success("outer")
+                },
+                cancel: { _ in trace.events.append("outer cancel") }
+            )
+            let inner = Benchmark.Probe<Void, String, Never>(
+                start: {
+                    trace.events.append("inner start")
+                    return .success(())
+                },
+                stop: { _ in
+                    trace.events.append("inner stop")
+                    return .success("inner")
+                },
+                cancel: { _ in trace.events.append("inner cancel") }
+            )
+            let workload = Benchmark.Workload<Void, Never>(
+                setup: {},
+                operation: { _ in trace.events.append("workload") },
+                teardown: { _ in }
+            )
+
+            _ = try Benchmark.run(
+                plan: Benchmark.Plan(warmup: 0, measurements: 1),
+                workload: workload,
+                probe: outer.zip(inner)
+            )
+
+            #expect(
+                trace.events == [
+                    "outer start",
+                    "inner start",
+                    "workload",
+                    "inner stop",
+                    "outer stop",
+                ]
+            )
+        }
+
+        @Test
+        func `workload failure cancels the active probe and tears down`() throws {
+            let counts = Counts()
+            let plan = try Benchmark.Plan(warmup: 0, measurements: 1)
+            let workload = Benchmark.Workload<Int, Failure>(
+                setup: { 0 },
+                operation: { (_: inout Int) throws(Failure) -> Void in
+                    throw Failure.failed
+                },
+                teardown: { _ in counts.teardowns += 1 }
+            )
+            let probe = Benchmark.Probe<Int, Int, Never>(
+                start: { .success(0) },
+                stop: { .success($0) },
+                cancel: { _ in counts.cancellations += 1 }
+            )
+
+            #expect(throws: Benchmark.Execution.Failure<Failure, Never>.self) {
+                try Benchmark.run(plan: plan, workload: workload, probe: probe)
             }
-        )
-        let probe = Benchmark.Probe<Int, Int, Never>(
-            start: { .success(counts.operations) },
-            stop: { start in .success(counts.operations - start) }
-        )
-
-        let execution = try Benchmark.run(plan: plan, workload: workload, probe: probe)
-
-        #expect(counts.setups == 3)
-        #expect(counts.operations == 9)
-        #expect(counts.teardowns == 3)
-        #expect(execution.measurement.values == [3, 3])
-        #expect(execution.iterations.map(\.phase) == [.warmup, .measurement, .measurement])
-        #expect(plan.work == 6)
-    }
-
-    @Test
-    func `probe composition observes one workload execution`() throws {
-        let plan = try Benchmark.Plan(warmup: 0, measurements: 1)
-        let counts = Counts()
-        let workload = Benchmark.Workload<Int, Never>(
-            setup: { 0 },
-            operation: {
-                $0 += 1
-                counts.operations += 1
-            },
-            teardown: { _ in }
-        )
-        let first = Benchmark.Probe<Int, Int, Never>(
-            start: { .success(counts.operations) },
-            stop: { .success(counts.operations - $0) }
-        )
-        let second = Benchmark.Probe<Int, String, Never>(
-            start: { .success(counts.operations) },
-            stop: { _ in .success("observed") }
-        )
-
-        let execution = try Benchmark.run(
-            plan: plan,
-            workload: workload,
-            probe: first.zip(second)
-        )
-
-        #expect(counts.operations == 1)
-        #expect(execution.measurement.values.first?.0 == 1)
-        #expect(execution.measurement.values.first?.1 == "observed")
-    }
-
-    @Test
-    func `composed probes nest lifecycle in reverse stop order`() throws {
-        let trace = Trace()
-        let outer = Benchmark.Probe<Void, String, Never>(
-            start: {
-                trace.events.append("outer start")
-                return .success(())
-            },
-            stop: { _ in
-                trace.events.append("outer stop")
-                return .success("outer")
-            },
-            cancel: { _ in trace.events.append("outer cancel") }
-        )
-        let inner = Benchmark.Probe<Void, String, Never>(
-            start: {
-                trace.events.append("inner start")
-                return .success(())
-            },
-            stop: { _ in
-                trace.events.append("inner stop")
-                return .success("inner")
-            },
-            cancel: { _ in trace.events.append("inner cancel") }
-        )
-        let workload = Benchmark.Workload<Void, Never>(
-            setup: {},
-            operation: { _ in trace.events.append("workload") },
-            teardown: { _ in }
-        )
-
-        _ = try Benchmark.run(
-            plan: Benchmark.Plan(warmup: 0, measurements: 1),
-            workload: workload,
-            probe: outer.zip(inner)
-        )
-
-        #expect(
-            trace.events == [
-                "outer start",
-                "inner start",
-                "workload",
-                "inner stop",
-                "outer stop",
-            ]
-        )
-    }
-
-    @Test
-    func `workload failure cancels the active probe and tears down`() throws {
-        let counts = Counts()
-        let plan = try Benchmark.Plan(warmup: 0, measurements: 1)
-        let workload = Benchmark.Workload<Int, Failure>(
-            setup: { 0 },
-            operation: { (_: inout Int) throws(Failure) -> Void in
-                throw Failure.failed
-            },
-            teardown: { _ in counts.teardowns += 1 }
-        )
-        let probe = Benchmark.Probe<Int, Int, Never>(
-            start: { .success(0) },
-            stop: { .success($0) },
-            cancel: { _ in counts.cancellations += 1 }
-        )
-
-        #expect(throws: Benchmark.Execution.Failure<Failure, Never>.self) {
-            try Benchmark.run(plan: plan, workload: workload, probe: probe)
+            #expect(counts.cancellations == 1)
+            #expect(counts.teardowns == 1)
         }
-        #expect(counts.cancellations == 1)
-        #expect(counts.teardowns == 1)
-    }
 
-    @Test
-    func `workload failure during warmup tears down`() throws {
-        let counts = Counts()
-        let plan = try Benchmark.Plan(warmup: 1, measurements: 1)
-        let workload = Benchmark.Workload<Int, Failure>(
-            setup: {
-                counts.setups += 1
-                return 0
-            },
-            operation: { (_: inout Int) throws(Failure) -> Void in
-                throw Failure.failed
-            },
-            teardown: { _ in counts.teardowns += 1 }
-        )
-        let probe = Benchmark.Probe<Int, Int, Never>(
-            start: { .success(0) },
-            stop: { .success($0) },
-            cancel: { _ in counts.cancellations += 1 }
-        )
+        @Test
+        func `workload failure during warmup tears down`() throws {
+            let counts = Counts()
+            let plan = try Benchmark.Plan(warmup: 1, measurements: 1)
+            let workload = Benchmark.Workload<Int, Failure>(
+                setup: {
+                    counts.setups += 1
+                    return 0
+                },
+                operation: { (_: inout Int) throws(Failure) -> Void in
+                    throw Failure.failed
+                },
+                teardown: { _ in counts.teardowns += 1 }
+            )
+            let probe = Benchmark.Probe<Int, Int, Never>(
+                start: { .success(0) },
+                stop: { .success($0) },
+                cancel: { _ in counts.cancellations += 1 }
+            )
 
-        #expect(throws: Benchmark.Execution.Failure<Failure, Never>.self) {
-            try Benchmark.run(plan: plan, workload: workload, probe: probe)
+            #expect(throws: Benchmark.Execution.Failure<Failure, Never>.self) {
+                try Benchmark.run(plan: plan, workload: workload, probe: probe)
+            }
+            #expect(counts.setups == 1)
+            #expect(counts.teardowns == 1)
+            #expect(counts.cancellations == 0)
         }
-        #expect(counts.setups == 1)
-        #expect(counts.teardowns == 1)
-        #expect(counts.cancellations == 0)
     }
 }
