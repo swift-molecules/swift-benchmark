@@ -40,6 +40,33 @@ struct `Benchmark Complexity Tests` {
     }
 
     @Test
+    func `a single distinct size is inconclusive`() {
+        #expect(
+            Benchmark.Complexity.analyze([
+                .init(size: 4, observation: 1),
+                .init(size: 4, observation: 2),
+            ]) == nil
+        )
+    }
+
+    @Test
+    func `the constant class fits the horizontal line through the mean`() throws {
+        let evidence = try #require(
+            Benchmark.Complexity.analyze(
+                [UInt(1), 2, 4, 8].map {
+                    .init(size: Cardinal($0), observation: Double($0))
+                },
+                classes: [.constant]
+            )
+        )
+        let fit = try #require(evidence.candidates.first).fit
+        #expect(fit.slope == 0)
+        #expect(fit.intercept == 3.75)
+        #expect(fit.rSquared == 0)
+        #expect(fit.meanSquaredError.isFinite)
+    }
+
+    @Test
     func `benchmark trend interprets canonical Sample evidence`() {
         let evidence = Sample.Trend.mannKendall([1.0, 2, 3, 4, 5], value: { $0 })
         let trend = Benchmark.Trend(evidence: evidence, significance: 0)
